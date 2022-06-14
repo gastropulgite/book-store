@@ -7,7 +7,7 @@ import (
 
 type cridentials struct {
 	UserName string `json:"username"`
-	Passrword string `json:"password"`
+	Password string `json:"password"`
 }
 
 type jsonResponse struct {
@@ -32,13 +32,13 @@ func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 			app.errorLog.Println(err)
 		}
 		
-		w.Header().Set("ContentType", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(out)
 		return
 	} 
 
-	app.infoLog.Println(creds.UserName, creds.Passrword)
+	app.infoLog.Println(creds.UserName, creds.Password)
 
 	payload.Error = false
 	payload.Message = "Signed In!"
