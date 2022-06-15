@@ -1,6 +1,7 @@
 package main
 
 import (
+	"book-api/internal/driver"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,7 @@ type application struct {
 	config config
 	infoLog *log.Logger
 	errorLog *log.Logger
+	db *driver.DB
 }
 
 type Payload struct {
@@ -29,13 +31,24 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate | log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate | log.Ltime | log.Lshortfile)
 
+	dsn := os.Getenv("DSN")
+
+	db, err := driver.ConnectPostgres(dsn)
+
+	if err != nil {
+		log.Fatal("Cannot connect to database")
+	}
+
+	defer db.SQL.Close()
+	
 	app := &application{
 		config: config,
 		infoLog: infoLog,
 		errorLog: errorLog,
+		db: db,
 	}
 
-	err := app.serve()
+	err = app.serve()
 
 	if err != nil {
 		log.Fatal(err)
