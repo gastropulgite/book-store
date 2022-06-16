@@ -1,6 +1,7 @@
 package main
 
 import (
+	"book-api/internal/data"
 	"book-api/internal/driver"
 	"fmt"
 	"log"
@@ -8,7 +9,7 @@ import (
 	"os"
 )
 
-type config struct {
+type config struct {	
 	port int
 }
 
@@ -16,7 +17,9 @@ type application struct {
 	config config
 	infoLog *log.Logger
 	errorLog *log.Logger
-	db *driver.DB
+	// db *driver.DB
+	models data.Models
+
 }
 
 type Payload struct {
@@ -45,7 +48,8 @@ func main() {
 		config: config,
 		infoLog: infoLog,
 		errorLog: errorLog,
-		db: db,
+		// db: db,
+		models: data.New(db.SQL),
 	}
 
 	err = app.serve()

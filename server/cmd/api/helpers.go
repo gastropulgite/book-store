@@ -76,4 +76,6 @@ func (app * application) errorJSON(
 	payload.Message = err.Error()
 
 	app.writeJSON(w, statusCode, payload)
+
+	return
 }

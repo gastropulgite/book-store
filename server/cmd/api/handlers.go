@@ -25,7 +25,8 @@ func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 		app.errorLog.Println(err)
 		payload.Error = true
 		payload.Message = "Invalid JSON"
-		app.writeJSON(w, http.StatusBadRequest, payload)
+		_ = app.writeJSON(w, http.StatusBadRequest, payload)
+		return
 	}
 
 	app.infoLog.Println(creds.UserName, creds.Password)

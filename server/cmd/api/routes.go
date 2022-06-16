@@ -1,6 +1,7 @@
 package main
 
 import (
+	"book-api/internal/data"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -24,5 +25,17 @@ func (app *application) routes() http.Handler {
 
 	r.Get("/users/login", app.Login)
 	r.Post("/users/login", app.Login)
+
+	r.Get("/users/", func(w http.ResponseWriter, r *http.Request) {
+
+		var users data.User
+		result, err := users.GetUsers()
+
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+		app.writeJSON(w, http.StatusOK, result)
+	})
 	return r
 }
