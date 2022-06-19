@@ -37,5 +37,6 @@ func (app *application) routes() http.Handler {
 		}
 		app.writeJSON(w, http.StatusOK, result)
 	})
+	
 	return r
 }
