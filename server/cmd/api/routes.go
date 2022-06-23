@@ -23,10 +23,10 @@ func (app *application) routes() http.Handler {
 		MaxAge: 300,
 	}))
 
-	r.Get("/users/login", app.Login)
-	r.Post("/users/login", app.Login)
+	r.Get(`/users/login`, app.Login)
+	r.Post(`/users/login`, app.Login)
 
-	r.Get("/users/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get(`/users/`, func(w http.ResponseWriter, r *http.Request) {
 
 		var users data.User
 		result, err := users.GetUsers()
@@ -36,6 +36,35 @@ func (app *application) routes() http.Handler {
 			return
 		}
 		app.writeJSON(w, http.StatusOK, result)
+	})
+	
+	r.Get(`/users/add`, func(w http.ResponseWriter, r *http.Request) {
+		var u = data.User{
+			Email: `hieuminh@gmail.com`,
+			FirstName:  `Hieu`,
+			LastName: `Minh`,
+			Password: `password`,
+		}
+
+		app.infoLog.Println(`Adding user!`)
+		id, err := app.models.User.Insert(u)
+		if err != nil {
+			app.infoLog.Printf(err.Error())
+			app.errorJSON(w, err , http.StatusForbidden)
+			return
+		}
+
+		app.infoLog.Println(`Got back ID of`, id)
+		newUser, err := app.models.User.GetUserById(id)
+
+		if err != nil {
+			app.infoLog.Printf(err.Error())
+			app.errorJSON(w, err , http.StatusNotFound)
+			return
+		}
+
+		app.writeJSON(w, http.StatusOK, newUser)
+		return
 	})
 	
 	return r

@@ -169,7 +169,12 @@ func (u *User) Delete() error {
 	return nil
 }
 
+func (u *User) Hash(password string) (string, error) {
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+
+	return string(hashedPassword), err
+}
 
 func (u *User) Insert(user User) (int, error) {
 
@@ -195,7 +200,7 @@ func (u *User) Insert(user User) (int, error) {
 		time.Now(),
 	).Scan(&newID)
 
-	return 0, nil
+	return newID, nil
 }
 
 func (u *User) ResetPassword(password string) error {
@@ -326,7 +331,7 @@ func (t *Token) GenerateToken(userID int, ttl time.Duration) (*Token, error) {
 
 func (t *Token) AuthenticateToken(r *http.Request) (*User, error) {
 
-	authorizationHeaders := r.Header.Get(``)
+	authorizationHeaders := r.Header.Get(`Authorization`)
 	if authorizationHeaders == `` {
 		return nil, errors.New(`No authorization header received!`)
 	}
@@ -366,8 +371,8 @@ func (t * Token) InsertToken(token Token, u User) (error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 	
+	// delete any existing tokens 
 	query := `DELETE FROM tokens WHERE id = $1`
-
 	_, err := db.ExecContext(ctx, query, token.UserID)
 	if err != nil {
 		return err
