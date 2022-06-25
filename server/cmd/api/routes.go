@@ -85,12 +85,65 @@ func (app *application) routes() http.Handler {
 		payload.Error = false
 		payload.Message = `Success!`
 
+		app.writeJSON(w, http.StatusOK, payload)
+
+		return
+	})
+	
+	r.Get(`/test-save-token/`, func(w http.ResponseWriter, r *http.Request) {
+		token, err := app.models.Token.GenerateToken(2, 60 * time.Minute)
+
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+		
+		user, err := app.models.User.GetUserById(2)
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+
+		token.UserID = user.ID
+		token.CreatedAt = time.Now()
+		token.UpdatedAt = time.Now()
+		
+		err = token.InsertToken(*token, *user)
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+
+		var payload jsonResponse 
+		payload.Data = token
+		payload.Error = false
+		payload.Message = `Success!`
+
 		
 		app.writeJSON(w, http.StatusOK, payload)
 
 		return
 	})
 
-	
+	r.Get(`/test-validate-token`, func(w http.ResponseWriter, r *http.Request) {
+		tokenToValidate := r.URL.Query().Get("token")
+		
+		app.infoLog.Println(tokenToValidate)
+		valid, err := app.models.Token.ValidToken(tokenToValidate)
+
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+
+		var payload jsonResponse
+		payload.Error = false
+		payload.Data = valid
+
+		app.writeJSON(w, http.StatusOK, payload)
+
+		return
+	})
+
 	return r
 }

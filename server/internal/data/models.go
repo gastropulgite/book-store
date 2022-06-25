@@ -200,6 +200,10 @@ func (u *User) Insert(user User) (int, error) {
 		time.Now(),
 	).Scan(&newID)
 
+	if err != nil {
+		return 0, err
+	}
+
 	return newID, nil
 }
 
@@ -259,7 +263,7 @@ func (t *Token) GetToken(plainText string) (*Token, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT * FROM tokens WHERE id = $1`
+	query := `SELECT * FROM tokens WHERE token = $1`
 	var token Token
 
 	row := db.QueryRowContext(ctx, query, plainText)
@@ -366,20 +370,19 @@ func (t *Token) AuthenticateToken(r *http.Request) (*User, error) {
 	return user, nil
 }
 
-func (t * Token) InsertToken(token Token, u User) (error) {
+func (t * Token) InsertToken(token Token, user User) (error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 	
 	// delete any existing tokens 
-	query := `DELETE FROM tokens WHERE id = $1`
+	query := `DELETE FROM tokens WHERE user_id = $1`
 	_, err := db.ExecContext(ctx, query, token.UserID)
 	if err != nil {
 		return err
 	}
 
-
-	token.Email = u.Email
+	token.Email = user.Email
 
 	query = `INSERT INTO tokens (user_id, email, token, token_hash, created_at, updated_at, expiry)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`
@@ -406,7 +409,7 @@ func (t * Token) DeleteByToken(plainText string) (error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `DELETE FROM tokens WHERE id = $1`
+	query := `DELETE FROM tokens WHERE token = $1`
 	_, err := db.ExecContext(ctx, query, plainText)
 	if err != nil {
 		return err
