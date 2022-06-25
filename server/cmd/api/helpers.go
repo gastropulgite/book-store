@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 )
 
 
@@ -60,10 +61,7 @@ func (app *application) writeJSON(
 	return nil
 }
 
-func (app * application) errorJSON(
-	w http.ResponseWriter, 
-	err error, 
-	status ...int) {
+func (app * application) errorJSON(w http.ResponseWriter, err error, status ...int) {
 
 	statusCode := http.StatusBadRequest
 
@@ -71,9 +69,28 @@ func (app * application) errorJSON(
 		statusCode = status[0]
 	}
 
+	var customError error
+
+	switch {
+	case strings.Contains(err.Error(), `SQLSTATE 23505`):
+		customError = errors.New(`Duplicate value violates constraint`)
+		statusCode = http.StatusForbidden
+
+	case strings.Contains(err.Error(), `SQLSTATE 22001`):
+		customError = errors.New(`The value you are trying to insert to too large!`)
+		statusCode = http.StatusForbidden
+
+	case strings.Contains(err.Error(), `SQLSTATE 23503`):
+		customError = errors.New(`Foreign key violation!`)
+		statusCode = http.StatusForbidden
+
+	default:
+		customError = err
+	}
+
 	var payload jsonResponse
 	payload.Error = true
-	payload.Message = err.Error()
+	payload.Message = customError.Error()
 
 	app.writeJSON(w, statusCode, payload)
 

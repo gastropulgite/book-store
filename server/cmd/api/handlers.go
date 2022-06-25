@@ -10,10 +10,12 @@ type cridentials struct {
 }
 
 type jsonResponse struct {
-	Data interface{} `json:"data"`
+	Data interface{} `json:"data,omitempty"`
 	Error bool `json:"error"`
 	Message string `json:"message"`
 }
+
+type envelope map[string]interface{}
 
 func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 	

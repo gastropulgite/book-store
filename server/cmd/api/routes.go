@@ -36,7 +36,16 @@ func (app *application) routes() http.Handler {
 			app.errorLog.Println(err)
 			return
 		}
-		app.writeJSON(w, http.StatusOK, result)
+
+		payload := jsonResponse{
+			Data: envelope{"users": result},
+			Error: false,
+			Message: `Success!`,
+		}
+
+		app.writeJSON(w, http.StatusOK, payload)
+		
+		return
 	})
 	
 	r.Get(`/users/add`, func(w http.ResponseWriter, r *http.Request) {
