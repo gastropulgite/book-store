@@ -10,6 +10,7 @@ type cridentials struct {
 }
 
 type jsonResponse struct {
+	Data interface{} `json:"data"`
 	Error bool `json:"error"`
 	Message string `json:"message"`
 }

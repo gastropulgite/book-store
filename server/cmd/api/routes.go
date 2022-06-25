@@ -3,6 +3,7 @@ package main
 import (
 	"book-api/internal/data"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -66,6 +67,30 @@ func (app *application) routes() http.Handler {
 		app.writeJSON(w, http.StatusOK, newUser)
 		return
 	})
+
+	r.Get(`/test-generate-token/`, func(w http.ResponseWriter, r *http.Request) {
+		token, err := app.models.Token.GenerateToken(1, 60 * time.Minute)
+
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+		
+		token.Email = "exam@gmail.com"
+		token.CreatedAt = time.Now()
+		token.UpdatedAt = time.Now()
+		
+		var payload jsonResponse 
+		payload.Data = token
+		payload.Error = false
+		payload.Message = `Success!`
+
+		
+		app.writeJSON(w, http.StatusOK, payload)
+
+		return
+	})
+
 	
 	return r
 }
